@@ -1,0 +1,16 @@
+{
+  "bundles": [
+    {
+      "name": "core",
+      "version": "1.0",
+      "url": "https://github.com/Crystal-Melodi/Origin-Files/releases/download/Archives/InfiniteFusionAndroid.zip",
+      "sha256": "b2581726479a357c04b68a46c7658bd120820c92dae0149d4e95d5e8739b64a4"
+    },
+    {
+      "name": "plugins",
+      "version": "1.0",
+      "url": "https://github.com/Crystal-Melodi/Origin-Files/releases/download/Archives/PIFAndroidPlugins.zip",
+      "sha256": "28303f16b2a841f388cb627332bea0c0279b2fa6a5804c7689974380ca2b1173"
+    }
+  ]
+}
