@@ -1,0 +1,6 @@
+rootProject.name='RPG Maker Plugin for JoiPlay'
+include ':joipad'
+include ':app'
+include ':commons'
+include ':sdp'
+

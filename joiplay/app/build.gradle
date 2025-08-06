@@ -1,0 +1,103 @@
+plugins {
+    id 'com.android.application'
+}
+android {
+    compileSdkVersion 31
+
+    defaultConfig {
+        applicationId "cyou.joiplay.rpgm"
+        minSdkVersion 21
+        targetSdkVersion 31
+        versionCode 11013
+        versionName "1.10.13"
+        archivesBaseName = "RPGMPlugin-$versionName"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+//    flavorDimensions "version"
+//    productFlavors{
+//        play {
+//            dimension "version"
+//            versionNameSuffix "-play"
+//        }
+//        patreon {
+//            dimension "version"
+//            versionNameSuffix "-patreon"
+//        }
+//    }
+
+    splits{
+        abi {
+            enable true
+            reset()
+            include "armeabi-v7a", "arm64-v8a", "x86_64"
+            universalApk false
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs 'src/main/libs/'
+        }
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+}
+
+dependencies {
+    implementation project(path: ':commons')
+    implementation project(path: ':joipad')
+}
+
+import groovy.json.JsonSlurper
+
+tasks.register("fetchAssets") {
+    doLast {
+        def manifest = new JsonSlurper().parse(file("$rootDir/asset-manifest.json"))
+
+        manifest.bundles.each { b ->
+            println "→ Downloading ${b.name} bundle…"
+
+            // ensure tmp directory exists
+            def tmpDir  = file("$buildDir/tmp")
+            tmpDir.mkdirs()
+
+            // download the zip
+            def zipFile = new File(tmpDir, "${b.name}.zip")
+            ant.get(src: b.url, dest: zipFile, verbose: true)
+
+            // verify checksum with a unique property per bundle
+            def propName = "hash_${b.name}"
+            ant.checksum(
+                file: zipFile,
+                algorithm: "sha-256",
+                property: propName
+            )
+            def actualHash = ant.project.properties[propName]
+            if (actualHash != b.sha256) {
+                throw new GradleException(
+                    "Checksum mismatch for ${b.name}! expected=${b.sha256} got=${actualHash}"
+                )
+            }
+
+            // determine unpack destination and ensure it exists
+            def destDir = (b.name == "plugins")
+                          ? "$rootDir/app/libs"
+                          : "$rootDir/app/src/main/assets/game"
+            file(destDir).mkdirs()
+
+            // unpack the assets
+            copy {
+                from zipTree(zipFile)
+                into destDir
+            }
+        }
+    }
+}
